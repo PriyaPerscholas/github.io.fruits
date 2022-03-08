@@ -7,6 +7,9 @@ const fruits = require('./models/fruits.js'); //NOTE: it must start with ./ if i
 const mongoose = require('mongoose');
 const Fruit = require('./models/fruits.js');
 
+const PORT = process.env.PORT || 3000
+
+
 //Must be first
 //middleware
 app.use((req, res, next) => {
@@ -122,6 +125,6 @@ mongoose.connection.once('open', () => {
        console.log('connected to mongo');
 });
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
        console.log('listening');
 });
