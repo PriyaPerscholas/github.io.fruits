@@ -16,7 +16,7 @@ app.use((req, res, next) => {
        console.log('I run for all routes')
        next()
 })
-app.use(express.urlencoded())
+app.use(express.urlencoded({ extended: true }))
 
 
 //set up view engine
