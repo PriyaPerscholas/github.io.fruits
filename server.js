@@ -1,12 +1,10 @@
 require('dotenv').config()
 const express = require('express');
 const app = express();
-
 const fruits = require('./models/fruits.js'); //NOTE: it must start with ./ if it's just a file, not an NPM package
-
 const mongoose = require('mongoose');
 const Fruit = require('./models/fruits.js');
-
+const methodOverride = require('method-override');
 const PORT = process.env.PORT || 3000
 
 
@@ -17,7 +15,9 @@ app.use((req, res, next) => {
        next()
 })
 app.use(express.urlencoded({ extended: true }))
+app.use(methodOverride('_method'));
 
+app.use(express.static('public')); //tells express to try to match requests with files in the directory called 'public'
 
 //set up view engine
 app.set('view engine', 'jsx')
@@ -56,9 +56,6 @@ app.get('/fruits', function (req, res) {
 })
 
 
-
-
-
 // app.get('/fruits/:indexOfFruitsArray', (req, res) => {
 //        res.render('Show', {
 //               fruit: fruits[req.params.indexOfFruitsArray]
@@ -85,6 +82,11 @@ app.post('/fruits/', (req, res) => {
        });
 });
 
+app.delete('/fruits/:id', (req, res) => {
+       Fruit.findByIdAndRemove(req.params.id, (err, data) => {
+              res.redirect('/fruits');//redirect back to fruits index
+       });
+});
 
 
 // app.get('/fruits/:id', (req, res) => {
@@ -119,6 +121,47 @@ app.get('/fruits/:id', (req, res) => {
 //               });
 //        });
 // });
+
+// app.delete('/fruits/:id', (req, res) => {
+//        res.send('deleting...');
+// });
+
+app.delete('/fruits/:id', (req, res) => {
+       Fruit.findByIdAndRemove(req.params.id, (err, data) => {
+              res.redirect('/fruits');//redirect back to fruits index
+       });
+});
+
+//create a edit route
+app.get('/fruits/:id/edit', (req, res) => {
+       Fruit.findById(req.params.id, (err, foundFruit) => { //find the fruit
+              if (!err) {
+                     res.render(
+                            'Edit',
+                            {
+                                   fruit: foundFruit //pass in found fruit
+                            }
+                     );
+              } else {
+                     res.send({ msg: err.message })
+              }
+       });
+});
+
+//PUT :send the edited form
+app.put('/fruits/:id', (req, res) => {
+       if (req.body.readyToEat === 'on') {
+              req.body.readyToEat = true;
+       } else {
+              req.body.readyToEat = false;
+       }
+       // Fruit.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedModel) => {
+       //        res.send(updatedModel);
+       // });
+       Fruit.findByIdAndUpdate(req.params.id, req.body, (err, updatedModel) => {
+              res.redirect('/fruits');
+       });
+});
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.connection.once('open', () => {
